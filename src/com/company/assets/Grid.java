@@ -53,7 +53,7 @@ public class Grid {
                 squares.add(new Square(this, new Id(columns.get(i), rows.get(j))));
             }
         }
-        fill();
+        generateSudoku(Difficulty.EASY);
     }
 
     public void fill() {
@@ -79,7 +79,6 @@ public class Grid {
          */
 
 
-        generateSudoku(Difficulty.EASY);
 
     }
 
@@ -99,12 +98,12 @@ public class Grid {
             empty(Type.ALL);
             generateSudoku(difficulty);
         }
+
         solve();
 
-        for (Square square : getSquares()) {
+        for (Square square : squares) {
             defaultValues.add(square.getNumber());
         }
-
 
         switch (difficulty) {
             case EASY:
@@ -112,12 +111,12 @@ public class Grid {
                 max = 40;
                 break;
             case MEDIUM:
-                min = 35;
-                max = 40;
+                min = 47;
+                max = 48;
                 break;
             case HARD:
-                min = 49;
-                max = 50;
+                min = 51;
+                max = 52;
                 break;
         }
 
@@ -126,7 +125,7 @@ public class Grid {
             System.out.println(counter);
             empty(Type.ALL);
             for (int i = 0; i < defaultValues.size(); i++) {
-                getSquares().get(i).setNumber(defaultValues.get(i), true);
+                squares.get(i).setNumber(defaultValues.get(i), true);
             }
             // Optimize this
             remove(min, max);
@@ -152,7 +151,7 @@ public class Grid {
                     counter++;
 
                     // If it is has done 1 million loops without success
-                    if (counter >= 1000000) return false;
+                    if (counter >= rowAmount * 100000) return false;
                     if (square.hasError()) {
                         for (int k = 0; k < j + 1; k++) {
                             rows.get(i).getSquares().get(k).setNumber(0, false);
@@ -173,6 +172,7 @@ public class Grid {
         pos = 0;
 
         all:
+        // Make boolean,  If checked all numbers and no solution found, return false
         while (!isFilled()) {
             outer:
             for (int i = row; i < 9; i++) {
@@ -216,7 +216,7 @@ public class Grid {
                 pos = 0;
             }
         }
-        for (Square square : getSquares()) {
+        for (Square square : squares) {
             square.setNumber(square.getNumber(), true);
         }
     }
@@ -450,7 +450,7 @@ public class Grid {
         firstSolve = new ArrayList<>();
         compareSolve = new ArrayList<>();
 
-        for (Square square : getSquares()) {
+        for (Square square : squares) {
             firstSolve.add(square.getNumber());
         }
 
@@ -460,10 +460,10 @@ public class Grid {
 
             empty(Type.INPUTS);
             selectedSolve(i, false);
-            for (Square square : getSquares()) {
+            for (Square square : squares) {
                 compareSolve.add(square.getNumber());
             }
-            for (int j = 0; j < getSquares().size(); j++) {
+            for (int j = 0; j < squares.size(); j++) {
                 if (!firstSolve.get(j).equals(compareSolve.get(j))) {
                     empty(Type.INPUTS);
                     return false;

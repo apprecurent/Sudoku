@@ -31,7 +31,9 @@ public class Square {
 
     private boolean highlighted, pressed, error, locked, marked, hovered;
 
-    private JLabel numberShower;
+    private JLabel lblNumber, lblNote;
+
+    private List<JLabel> notes;
 
     private Grid grid;
 
@@ -54,17 +56,70 @@ public class Square {
         col = id.getColumnId();
         row = id.getRowId();
 
-        numberShower = new JLabel();
-        grid.getPanel().add(numberShower);
-        numberShower.setLocation(new Point((col - 1) * 50, (row - 1) * 50));
-        numberShower.setSize(new Dimension(50, 50));
-        numberShower.setFont(new Font("Arial", Font.PLAIN, 30));
-        numberShower.setVerticalAlignment(SwingConstants.CENTER);
-        numberShower.setHorizontalAlignment(SwingConstants.CENTER);
+        lblNumber = new JLabel();
+        grid.getPanel().add(lblNumber);
+        lblNumber.setLocation(new Point((col - 1) * 50, (row - 1) * 50));
+        lblNumber.setSize(new Dimension(50, 50));
+        lblNumber.setFont(new Font("Arial", Font.PLAIN, 30));
+        lblNumber.setVerticalAlignment(SwingConstants.CENTER);
+        lblNumber.setHorizontalAlignment(SwingConstants.CENTER);
 
         if (number != 0) {
-            numberShower.setText(String.valueOf(number));
+            lblNumber.setText(String.valueOf(number));
         }
+        
+        notes = new ArrayList<>();
+        
+        for (int i = 0; i < 9; i++) {
+            int vertical = 0, horizontal = 0;
+            notes.add(new JLabel(String.valueOf(i+1)));
+            notes.get(i).setLocation(new Point((col - 1) * 50, (row - 1) * 50));
+            notes.get(i).setSize(new Dimension(50, 50));
+            notes.get(i).setFont(new Font("Arial", Font.PLAIN, 10));
+
+            switch (i) {
+                case 0:
+                    vertical = SwingConstants.TOP;
+                    horizontal = SwingConstants.LEFT;
+                    break;
+                case 1:
+                    vertical = SwingConstants.TOP;
+                    horizontal = SwingConstants.CENTER;
+                    break;
+                case 2:
+                    vertical = SwingConstants.TOP;
+                    horizontal = SwingConstants.RIGHT;
+                    break;
+                case 3:
+                    vertical = SwingConstants.CENTER;
+                    horizontal = SwingConstants.LEFT;
+                    break;
+                case 4:
+                    vertical = SwingConstants.CENTER;
+                    horizontal = SwingConstants.CENTER;
+                    break;
+                case 5:
+                    vertical = SwingConstants.CENTER;
+                    horizontal = SwingConstants.RIGHT;
+                    break;
+                case 6:
+                    vertical = SwingConstants.BOTTOM;
+                    horizontal = SwingConstants.LEFT;
+                    break;
+                case 7:
+                    vertical = SwingConstants.BOTTOM;
+                    horizontal = SwingConstants.CENTER;
+                    break;
+                case 8:
+                    vertical = SwingConstants.BOTTOM;
+                    horizontal = SwingConstants.RIGHT;
+                    break;
+            }
+            notes.get(i).setVerticalAlignment(vertical);
+            notes.get(i).setHorizontalAlignment(horizontal);
+        }
+        
+        
     }
 
     public void setNumber(int number, boolean locked) {
@@ -73,11 +128,11 @@ public class Square {
         this.locked = locked;
         this.error = false;
         
-        numberShower.setText(String.valueOf(number));
+        lblNumber.setText(String.valueOf(number));
 
         if (number == 0) {
             this.locked = false;
-            numberShower.setText("");
+            lblNumber.setText("");
         }
 
         // loop through all the fields (row, column, box) and do these checks instead (good for highlighting associated squares aswell)
@@ -86,14 +141,23 @@ public class Square {
         }
 
         if (error) {
-            numberShower.setForeground(Color.RED);
+            lblNumber.setForeground(Color.RED);
         } else if (locked) {
-            numberShower.setForeground(Color.BLACK);
+            lblNumber.setForeground(Color.BLACK);
         } else {
-            numberShower.setForeground(new Color(25, 110, 140));
+            lblNumber.setForeground(new Color(25, 110, 140));
         }
 
     }
+    
+    public void setNote(int note) {
+        notes.get(note).setVisible(!isVisible(note));
+    }
+    
+    public boolean isVisible(int note) {
+        return notes.get(note).isVisible();
+    }
+    
     public int getNumber() {
         return this.number;
     }

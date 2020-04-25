@@ -5,9 +5,11 @@
  */
 package com.company;
 
+import com.company.assets.Mode;
 import com.company.assets.Square;
 
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
@@ -19,6 +21,11 @@ public class Frame extends javax.swing.JFrame {
     /**
      * Creates new form Frame
      */
+    private Mode mode;
+
+    private int control, s;
+    private boolean controlPressed, sPressed;
+
     public Frame() {
         initComponents();
 
@@ -30,6 +37,11 @@ public class Frame extends javax.swing.JFrame {
 
         getContentPane().setBackground(new Color(90, 90, 90));
 
+        control = KeyEvent.VK_CONTROL;
+        s = KeyEvent.VK_S;
+
+        mode = Mode.WRITE;
+
         // Remove title bar
         /*
 
@@ -38,6 +50,10 @@ public class Frame extends javax.swing.JFrame {
         pack();
         setVisible(true);
          */
+    }
+
+    private void setMode(Mode mode) {
+        this.mode = mode;
     }
 
     /**
@@ -91,16 +107,44 @@ public class Frame extends javax.swing.JFrame {
 
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
         // TODO add your handling code here:
+        if (evt.getKeyCode() == control) {
+            System.out.println("control");
+            controlPressed = true;
+        }
+        if (evt.getKeyCode() == s) {
+            System.out.println("s");
+            sPressed = true;
+        }
+
+        if (sPressed && controlPressed) {
+            System.out.println("test");
+            if (mode == Mode.WRITE) mode = Mode.NOTE;
+            else mode = Mode.WRITE;
+        }
+
+        gamePanel.clearMarkedSquares();
+
+        System.out.println(mode.toString());
+
         for (Square square : gamePanel.getGrid().getSquares()) {
             if (square.isPressed() && !square.isLocked()) {
                 if (evt.getKeyCode() >= 49 && evt.getKeyCode() <= 57) {
-                    square.setNumber(evt.getKeyCode() - 48, false);
+                    if (mode == Mode.WRITE) {
+                        square.setNumber(evt.getKeyCode() - 48, false);
+                        for (Square s : gamePanel.getGrid().getSquares()) {
+                            if (s.getNumber() == square.getNumber()) s.setMarked(true);
+                        }
+                    } else {
+                        square.setNote(evt.getKeyCode() - 48);
+                    }
+                    repaint();
                 } else if (evt.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
                     square.setNumber(0, false);
                 }
             }
 
         }
+
         if (gamePanel.getGrid().noPressed()) {
             for (Square s : gamePanel.getGrid().getSquares()) {
                 if (s.getNumber() == evt.getKeyCode() - 48 && s.getNumber() != 0) {
