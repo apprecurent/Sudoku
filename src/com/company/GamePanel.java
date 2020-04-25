@@ -5,11 +5,8 @@
  */
 package com.company;
 
-import com.company.assets.Column;
-import com.company.assets.Grid;
-import com.company.assets.Id;
-import com.company.assets.Row;
-import com.company.assets.Square;
+import com.company.assets.*;
+
 import java.awt.Graphics;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -65,6 +62,20 @@ public class GamePanel extends javax.swing.JPanel {
         repaint();
     }
 
+    public void clearMarkedSquares() {
+        for (Square square : grid.getSquares()) {
+            square.setMarked(false);
+        }
+        repaint();
+    }
+
+    public void clearHoveredSquares() {
+        for (Square square : grid.getSquares()) {
+            square.setHovered(false);
+        }
+        repaint();
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -115,9 +126,9 @@ public class GamePanel extends javax.swing.JPanel {
         // TODO add your handling code here:
         for (Square square : grid.getSquares()) {
             if (square.isHit(new Point(evt.getX(), evt.getY()))) {
-                square.setHighlighted(true);
+                square.setHovered(true);
             } else {
-                square.setHighlighted(false);
+                square.setHovered(false);
             }
         }
         repaint();
@@ -126,10 +137,23 @@ public class GamePanel extends javax.swing.JPanel {
     private void formMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMousePressed
         // TODO add your handling code here:
         clearPressedSquares();
+        clearMarkedSquares();
+        clearHighlightedSquares();
 
         for (Square square : grid.getSquares()) {
             if (square.isHit(new Point(evt.getX(), evt.getY()))) {
                 square.setPressed(true);
+                for (Field field : square.getFields()) {
+                    for (Square s : field.getSquares()) {
+                        s.setHighlighted(true);
+                    }
+                }
+                for (Square s : grid.getSquares()) {
+                    if (s.getNumber() == square.getNumber() && s.getNumber() != 0) {
+                        s.setMarked(true);
+                    }
+                }
+                break;
             }
         }
         repaint();
@@ -137,7 +161,7 @@ public class GamePanel extends javax.swing.JPanel {
 
     private void formMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseExited
         // TODO add your handling code here:
-        clearHighlightedSquares();
+        clearHoveredSquares();
     }//GEN-LAST:event_formMouseExited
 
 

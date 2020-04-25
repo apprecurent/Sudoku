@@ -29,7 +29,7 @@ public class Square {
     private int col;
     private int row;
 
-    private boolean highlighted, pressed, error, locked;
+    private boolean highlighted, pressed, error, locked, marked, hovered;
 
     private JLabel numberShower;
 
@@ -139,11 +139,18 @@ public class Square {
         
          */
         g.setColor(Color.WHITE);
-        if (isHighlighted()) {
+        if (isMarked()) {
             g.setColor(new Color(160, 200, 215));
         }
+        if (isHighlighted()) {
+            g.setColor(new Color(220, 220, 230));
+        }
+        if (isHovered()) {
+            g.setColor(new Color(195, 215, 250));
+        }
         if (isPressed()) {
-            g.setColor(new Color(120, 190, 210));
+            g.setColor(new Color(145, 180, 230));
+            // g.setColor(new Color(120, 190, 210));
         }
         g.fillRect((col - 1) * 50, (row - 1) * 50, 50, 50);
         g.setColor(Color.BLACK);
@@ -165,6 +172,22 @@ public class Square {
 
     public boolean isHighlighted() {
         return this.highlighted;
+    }
+
+    public void setHovered(boolean hovered) {
+        this.hovered = hovered;
+    }
+
+    public boolean isHovered() {
+        return this.hovered;
+    }
+
+    public void setMarked(boolean marked) {
+        this.marked = marked;
+    }
+
+    public boolean isMarked() {
+        return this.marked;
     }
 
     public void setPressed(boolean pressed) {
@@ -193,6 +216,10 @@ public class Square {
 
     public boolean isHit(Point p) {
         return p.x > (col - 1) * 50 && p.x < col * 50 && p.y > (row - 1) * 50 && p.y < row * 50;
+    }
+
+    public boolean isEmpty() {
+        return this.getNumber() == 0;
     }
 
     public String toString() {

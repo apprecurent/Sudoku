@@ -5,8 +5,6 @@
  */
 package com.company.assets;
 
-import com.sun.org.apache.xml.internal.security.exceptions.AlgorithmAlreadyRegisteredException;
-
 /**
  *
  * @author ville

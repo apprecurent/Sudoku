@@ -5,8 +5,6 @@
  */
 package com.company.assets;
 
-import com.sun.media.sound.ModelMappedInstrument;
-
 /**
  *
  * @author ville

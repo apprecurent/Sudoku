@@ -6,10 +6,12 @@
 package com.company;
 
 import com.company.assets.Square;
-import com.sun.glass.events.KeyEvent;
+
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
 
 /**
- *
  * @author ville
  */
 public class Frame extends javax.swing.JFrame {
@@ -19,6 +21,23 @@ public class Frame extends javax.swing.JFrame {
      */
     public Frame() {
         initComponents();
+
+        init();
+    }
+
+    public void init() {
+        setLocationRelativeTo(null);
+
+        getContentPane().setBackground(new Color(90, 90, 90));
+
+        // Remove title bar
+        /*
+
+        dispose();
+        setUndecorated(true);
+        pack();
+        setVisible(true);
+         */
     }
 
     /**
@@ -42,29 +61,29 @@ public class Frame extends javax.swing.JFrame {
         javax.swing.GroupLayout gamePanelLayout = new javax.swing.GroupLayout(gamePanel);
         gamePanel.setLayout(gamePanelLayout);
         gamePanelLayout.setHorizontalGroup(
-            gamePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 444, Short.MAX_VALUE)
+                gamePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGap(0, 444, Short.MAX_VALUE)
         );
         gamePanelLayout.setVerticalGroup(
-            gamePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 444, Short.MAX_VALUE)
+                gamePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGap(0, 444, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(gamePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(20, Short.MAX_VALUE))
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGap(20, 20, 20)
+                                .addComponent(gamePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(20, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(gamePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(20, Short.MAX_VALUE))
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGap(20, 20, 20)
+                                .addComponent(gamePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         pack();
@@ -76,10 +95,21 @@ public class Frame extends javax.swing.JFrame {
             if (square.isPressed() && !square.isLocked()) {
                 if (evt.getKeyCode() >= 49 && evt.getKeyCode() <= 57) {
                     square.setNumber(evt.getKeyCode() - 48, false);
-                } else if (evt.getKeyCode() == KeyEvent.VK_BACKSPACE) {
+                } else if (evt.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
                     square.setNumber(0, false);
                 }
             }
+
+        }
+        if (gamePanel.getGrid().noPressed()) {
+            for (Square s : gamePanel.getGrid().getSquares()) {
+                if (s.getNumber() == evt.getKeyCode() - 48 && s.getNumber() != 0) {
+                    s.setMarked(!s.isMarked());
+                } else {
+                    if (s.isMarked()) s.setMarked(false);
+                }
+            }
+            gamePanel.repaint();
         }
     }//GEN-LAST:event_formKeyPressed
 
@@ -90,7 +120,7 @@ public class Frame extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
