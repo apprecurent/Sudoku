@@ -28,7 +28,8 @@ public class GamePanel extends javax.swing.JPanel {
         this.frame = frame;
     }
     */
-    
+
+    // The grid that this Panel contains
     private Grid grid;
 
     public GamePanel() {
@@ -36,16 +37,27 @@ public class GamePanel extends javax.swing.JPanel {
         grid = new Grid(this);
         
     }
-    
+
+    /**
+     * Gets the grid of this panel
+     * @return
+     */
     public Grid getGrid() {
         return this.grid;
     }
 
+    /**
+     * Paints this panel
+     * @param g
+     */
     public void paintComponent(Graphics g) {
-
+        // Paint the grid and all its components
         grid.paint(g);
     }
 
+    /**
+     * Clear all the squares that are highlighted
+     */
     public void clearHighlightedSquares() {
         for (Square square : grid.getSquares()) {
             square.setHighlighted(false);
@@ -54,6 +66,9 @@ public class GamePanel extends javax.swing.JPanel {
         repaint();
     }
 
+    /**
+     * Clear all the squares that are pressed
+     */
     public void clearPressedSquares() {
         for (Square square : grid.getSquares()) {
             square.setPressed(false);
@@ -62,6 +77,9 @@ public class GamePanel extends javax.swing.JPanel {
         repaint();
     }
 
+    /**
+     * Clear all the squares that are marked
+     */
     public void clearMarkedSquares() {
         for (Square square : grid.getSquares()) {
             square.setMarked(false);
@@ -69,6 +87,9 @@ public class GamePanel extends javax.swing.JPanel {
         repaint();
     }
 
+    /**
+     * Clear all the squares that are hovered
+     */
     public void clearHoveredSquares() {
         for (Square square : grid.getSquares()) {
             square.setHovered(false);
@@ -114,47 +135,76 @@ public class GamePanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void formMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseMoved
-        // TODO add your handling code here:
+    /**
+     * Detects every time the mouse is moved inside of the panel
+     * @param evt
+     */
+    private void formMouseMoved(java.awt.event.MouseEvent evt) {
+        // Loop through all the squares to check which square is currently hovered by the cursor
         for (Square square : grid.getSquares()) {
+            // If its hovered, set hovered
             if (square.isHit(new Point(evt.getX(), evt.getY()))) {
                 square.setHovered(true);
             } else {
+                // If not hovered, set false
                 square.setHovered(false);
             }
+
+            // No need to keep looking for the square if its already been found
+            break;
         }
         repaint();
-    }//GEN-LAST:event_formMouseMoved
+    }
 
-    private void formMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMousePressed
-        // TODO add your handling code here:
+    /**
+     * Detects every time the mouse if pressed inside of the panel
+     * @param evt
+     */
+    private void formMousePressed(java.awt.event.MouseEvent evt) {
+
+        //  Clear all previous markings to mark new ones
         clearPressedSquares();
         clearMarkedSquares();
         clearHighlightedSquares();
 
+        // Loop the squares to check which ones have been hit
         for (Square square : grid.getSquares()) {
             if (square.isHit(new Point(evt.getX(), evt.getY()))) {
                 square.setPressed(true);
+
+                /*
+                Turn these off if highlight setting is off
+                 */
+
+                // Highlight all the squares that are linked with the one clicked (row, column and the box)
                 for (Field field : square.getFields()) {
                     for (Square s : field.getSquares()) {
                         s.setHighlighted(true);
                     }
                 }
+
+                // Mark all the squares with the same number as the one clicked
                 for (Square s : grid.getSquares()) {
                     if (s.getNumber() == square.getNumber() && s.getNumber() != 0) {
                         s.setMarked(true);
                     }
                 }
+
+                // No need to continue looking for the square if its already been found
                 break;
             }
         }
         repaint();
-    }//GEN-LAST:event_formMousePressed
+    }
 
-    private void formMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseExited
-        // TODO add your handling code here:
+    /**
+     * Detects when the mouse exits the panel
+     * @param evt
+     */
+    private void formMouseExited(java.awt.event.MouseEvent evt) {
+        // Removed the currently hovering square when exiting (stays blue otherwise)
         clearHoveredSquares();
-    }//GEN-LAST:event_formMouseExited
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

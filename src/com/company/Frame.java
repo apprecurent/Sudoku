@@ -23,7 +23,10 @@ public class Frame extends javax.swing.JFrame {
      */
     private Mode mode;
 
-    private int control, s;
+    // Integer constants for keys
+    private final int CONTROL = KeyEvent.VK_CONTROL;
+    private final int S = KeyEvent.VK_S;
+
     private boolean controlPressed, sPressed;
 
     public Frame() {
@@ -32,28 +35,27 @@ public class Frame extends javax.swing.JFrame {
         init();
     }
 
+    /**
+     * Initialize vars related to JFrame
+     */
     public void init() {
+        // Set to middle of screen
         setLocationRelativeTo(null);
 
+        // Set the background of the Frame
         getContentPane().setBackground(new Color(90, 90, 90));
 
-        control = KeyEvent.VK_CONTROL;
-        s = KeyEvent.VK_S;
-
+        // Set default mode (write)
         mode = Mode.WRITE;
 
         // Remove title bar
-        /*
 
+        /*
         dispose();
         setUndecorated(true);
         pack();
         setVisible(true);
          */
-    }
-
-    private void setMode(Mode mode) {
-        this.mode = mode;
     }
 
     /**
@@ -72,6 +74,7 @@ public class Frame extends javax.swing.JFrame {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 formKeyPressed(evt);
             }
+
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 formKeyReleased(evt);
             }
@@ -80,89 +83,108 @@ public class Frame extends javax.swing.JFrame {
         javax.swing.GroupLayout gamePanelLayout = new javax.swing.GroupLayout(gamePanel);
         gamePanel.setLayout(gamePanelLayout);
         gamePanelLayout.setHorizontalGroup(
-            gamePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 444, Short.MAX_VALUE)
+                gamePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGap(0, 444, Short.MAX_VALUE)
         );
         gamePanelLayout.setVerticalGroup(
-            gamePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 444, Short.MAX_VALUE)
+                gamePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGap(0, 444, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(gamePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(20, Short.MAX_VALUE))
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGap(20, 20, 20)
+                                .addComponent(gamePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(20, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(gamePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(20, Short.MAX_VALUE))
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGap(20, 20, 20)
+                                .addComponent(gamePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
-        // TODO add your handling code here:
-        if (evt.getKeyCode() == control) {
-            System.out.println("control");
-            controlPressed = true;
-        }
-        if (evt.getKeyCode() == s) {
-            System.out.println("s");
-            sPressed = true;
-        }
+    /**
+     * Detects when a key is pressed
+     * @param evt
+     */
+    private void formKeyPressed(java.awt.event.KeyEvent evt) {
+        /*
+        Used to switch between note mode and write mode, if only one is down at a time it will turn false on release (see keyReleasedEvent)
+         */
+        if (evt.getKeyCode() == CONTROL) controlPressed = true;
+        if (evt.getKeyCode() == S) sPressed = true;
 
+        // If both are down switch mode
         if (sPressed && controlPressed) {
-            System.out.println("test");
             if (mode == Mode.WRITE) mode = Mode.NOTE;
             else mode = Mode.WRITE;
         }
 
+        // Clear all previous markings with every new press
         gamePanel.clearMarkedSquares();
 
-        System.out.println(mode.toString());
-
+        /*
+         Loop through, to write the square must be empty, unlocked and the keypress must be between 1-9
+         Check the currently activated mode
+         */
         for (Square square : gamePanel.getGrid().getSquares()) {
             if (square.isPressed() && !square.isLocked()) {
                 if (evt.getKeyCode() >= 49 && evt.getKeyCode() <= 57) {
                     if (mode == Mode.WRITE) {
                         square.setNumber(evt.getKeyCode() - 48, false);
+                        // Do markings if the mode is WRITE
                         for (Square s : gamePanel.getGrid().getSquares()) {
                             if (s.getNumber() == square.getNumber()) s.setMarked(true);
                         }
+                        // Repaint the markings
+                        repaint();
                     } else {
                         square.setNote(evt.getKeyCode() - 48);
                     }
-                    repaint();
+                    // Delete number or all notes
                 } else if (evt.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
                     square.setNumber(0, false);
+                    square.clearNotes();
                 }
             }
 
         }
 
+        // If no Square is currently selected (pressed) then show all the squares that have the same number as the keypress
         if (gamePanel.getGrid().noPressed()) {
             for (Square s : gamePanel.getGrid().getSquares()) {
                 if (s.getNumber() == evt.getKeyCode() - 48 && s.getNumber() != 0) {
                     s.setMarked(!s.isMarked());
                 } else {
+                    // Deselect all that do not have the same number as the inputted number
                     if (s.isMarked()) s.setMarked(false);
                 }
             }
-            gamePanel.repaint();
+            repaint();
         }
-    }//GEN-LAST:event_formKeyPressed
+    }
 
-    private void formKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyReleased
-        // TODO add your handling code here:
-    }//GEN-LAST:event_formKeyReleased
+    /**
+     * Detects when a key is released
+     *
+     * @param evt
+     */
+    private void formKeyReleased(java.awt.event.KeyEvent evt) {
+
+        /*
+        Used to switch between note mode or write mode
+         */
+        if (evt.getKeyCode() == CONTROL) controlPressed = false;
+        if (evt.getKeyCode() == S) sPressed = false;
+    }
 
     /**
      * @param args the command line arguments

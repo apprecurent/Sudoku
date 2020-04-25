@@ -37,25 +37,25 @@ public class Square {
 
     private Grid grid;
 
-    public Square(Grid grid, Id id) {
-        this(grid, id, 0);
-    }
-
     /**
-     * REPLACE ID WITH ROW AND COLUMN
+     * Constructor of a Square, assign var data (make separate method init?)
      *
-     * @param grid
-     * @param id
-     * @param number
+     * @param grid The grid which this Square belong sto
+     * @param id The identifier of the Square (row and column)
      */
-    public Square(Grid grid, Id id, int number) {
+    public Square(Grid grid, Id id) {
         this.id = id;
-        this.number = number;
+        this.number = 0;
         this.grid = grid;
 
         col = id.getColumnId();
         row = id.getRowId();
 
+        notes = new ArrayList<>();
+
+        /*
+        Initialize lblNumber, containing the number of each Square
+         */
         lblNumber = new JLabel();
         grid.getPanel().add(lblNumber);
         lblNumber.setLocation(new Point((col - 1) * 50, (row - 1) * 50));
@@ -64,19 +64,20 @@ public class Square {
         lblNumber.setVerticalAlignment(SwingConstants.CENTER);
         lblNumber.setHorizontalAlignment(SwingConstants.CENTER);
 
-        if (number != 0) {
-            lblNumber.setText(String.valueOf(number));
-        }
-        
-        notes = new ArrayList<>();
-        
+        /*
+        Initialize lblNote, containing the notes of each Square
+         */
         for (int i = 0; i < 9; i++) {
             int vertical = 0, horizontal = 0;
-            notes.add(new JLabel(String.valueOf(i+1)));
-            notes.get(i).setLocation(new Point((col - 1) * 50, (row - 1) * 50));
-            notes.get(i).setSize(new Dimension(50, 50));
-            notes.get(i).setFont(new Font("Arial", Font.PLAIN, 10));
+            lblNote = new JLabel();
+            grid.getPanel().add(lblNote);
+            lblNote.setText(String.valueOf(i+1));
+            lblNote.setLocation(new Point((col - 1) * 50 + 5, (row - 1) * 50 + 5));
+            lblNote.setSize(new Dimension(40, 40));
+            lblNote.setFont(new Font("Arial", Font.PLAIN, 10));
+            lblNote.setVisible(false);
 
+            // Assign correct position corresponding to the number
             switch (i) {
                 case 0:
                     vertical = SwingConstants.TOP;
@@ -115,29 +116,46 @@ public class Square {
                     horizontal = SwingConstants.RIGHT;
                     break;
             }
-            notes.get(i).setVerticalAlignment(vertical);
-            notes.get(i).setHorizontalAlignment(horizontal);
+
+            // Set correct alignments
+            lblNote.setVerticalAlignment(vertical);
+            lblNote.setHorizontalAlignment(horizontal);
+
+            // Add the new note to the list
+            notes.add(lblNote);
         }
-        
-        
     }
 
+
+
     public void setNumber(int number, boolean locked) {
-        
+
+        /*
+         Clear all notes when setting a new number (the number should always override the notes)
+         Must do this before setting the number or the clearNotes() will think that there is a number and note remove the notes
+         */
+        clearNotes();
+
+        // Set vars
         this.number = number;
         this.locked = locked;
         this.error = false;
-        
+
+        // Set the text of the label
         lblNumber.setText(String.valueOf(number));
 
+        // 0 equals an empty square
         if (number == 0) {
             this.locked = false;
             lblNumber.setText("");
         }
 
         // loop through all the fields (row, column, box) and do these checks instead (good for highlighting associated squares aswell)
-        if (this.id.getRow().hasNumber(number, getColumn().getId()) || this.id.getColumn().hasNumber(number, getRow().getId()) || getBox().hasNumber(number, getUniqueId())) {
-            error = true;
+        for (Field field : getFields()) {
+            if (field.hasNumber(number, field.getId())) {
+                error = true;
+                break;
+            }
         }
 
         if (error) {
@@ -151,11 +169,21 @@ public class Square {
     }
     
     public void setNote(int note) {
-        notes.get(note).setVisible(!isVisible(note));
+
+        // Only set notes if the Square is empty
+        if (!hasNumber()) notes.get(note-1).setVisible(!isVisible(note));
+    }
+
+    public void clearNotes() {
+        for (int i = 1; i < 10; i++) {
+            if (isVisible(i)) {
+                setNote(i);
+            }
+        }
     }
     
     public boolean isVisible(int note) {
-        return notes.get(note).isVisible();
+        return notes.get(note-1).isVisible();
     }
     
     public int getNumber() {
