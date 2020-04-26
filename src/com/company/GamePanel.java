@@ -145,13 +145,13 @@ public class GamePanel extends javax.swing.JPanel {
             // If its hovered, set hovered
             if (square.isHit(new Point(evt.getX(), evt.getY()))) {
                 square.setHovered(true);
+                break;
             } else {
                 // If not hovered, set false
                 square.setHovered(false);
             }
 
             // No need to keep looking for the square if its already been found
-            break;
         }
         repaint();
     }

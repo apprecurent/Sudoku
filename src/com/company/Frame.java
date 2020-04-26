@@ -128,9 +128,6 @@ public class Frame extends javax.swing.JFrame {
             else mode = Mode.WRITE;
         }
 
-        // Clear all previous markings with every new press
-        gamePanel.clearMarkedSquares();
-
         /*
          Loop through, to write the square must be empty, unlocked and the keypress must be between 1-9
          Check the currently activated mode

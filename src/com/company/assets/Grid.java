@@ -7,11 +7,9 @@ package com.company.assets;
 
 import java.awt.Graphics;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JPanel;
 
 /**
@@ -27,6 +25,14 @@ public class Grid {
     private JPanel panel;
 
     private Random random;
+
+    /*
+    Make Grid a class just containing Squares, not displaying anything automatically.
+    The Grid can check the square which it has for errors without displaying
+    Then have Game class (Sudoku?) that does the displaying and which takes a Grid with the appropriate Squares.
+     */
+
+
 
     public Grid(JPanel panel) {
         this.panel = panel;
@@ -84,17 +90,12 @@ public class Grid {
 
     public void generateSudoku(Difficulty difficulty) {
 
-        int min, max;
-        min = 0;
-        max = 0;
-
-        int counter = 0;
+        int min = 0, max = 0;
 
         List<Integer> defaultValues = new ArrayList<>();
 
         // If timeout, run again
         if (!generateRandomRows(8)) {
-            System.out.println("Timedout!");
             empty(Type.ALL);
             generateSudoku(difficulty);
         }
@@ -115,22 +116,91 @@ public class Grid {
                 max = 48;
                 break;
             case HARD:
-                min = 51;
-                max = 52;
+                min = 50;
+                max = 51;
                 break;
         }
 
-        do {
-            counter++;
-            System.out.println(counter);
-            empty(Type.ALL);
-            for (int i = 0; i < defaultValues.size(); i++) {
-                squares.get(i).setNumber(defaultValues.get(i), true);
+        for (int i = 0; i < 1; i++){
+            int finalMin = min;
+            int finalMax = max;
+            AtomicInteger counter = new AtomicInteger();
+            Thread thread = new Thread(() -> {
+                // Put code in here
+                do {
+                    counter.getAndIncrement();
+                    System.out.println("ITERATION: " + counter);
+                    empty(Type.ALL);
+                    for (int j = 0; j < defaultValues.size(); j++) {
+                        squares.get(j).setNumber(defaultValues.get(j), true);
+                    }
+                    // Optimize this
+                    remove(finalMin, finalMax);
+                } while (!isUnique());
+                empty(Type.INPUTS);
+
+            });
+            thread.start();
+        }
+
+
+    }
+
+    public boolean isUnique() {
+        List<Integer> emptySquares = new ArrayList<>(getEmptySquares());
+        selectedSolve(1, false);
+
+        List<Integer> firstSolve, compareSolve;
+        firstSolve = new ArrayList<>();
+        compareSolve = new ArrayList<>();
+
+        // Only add unsolved squares and only check them, faster!!!!!!!
+
+        for (int i = 0; i < emptySquares.size(); i++) {
+            firstSolve.add(getSquares().get(emptySquares.get(i)).getNumber());
+        }
+
+        for (int i = 2; i < 10; i++) {
+
+            empty(Type.INPUTS);
+            selectedSolve(i, false);
+            for (int j = 0; j < emptySquares.size(); j++) {
+                compareSolve.add(getSquares().get(emptySquares.get(j)).getNumber());
             }
-            // Optimize this
-            remove(min, max);
-        } while (!isUnique());
-        empty(Type.INPUTS);
+
+            for (int j = 0; j < emptySquares.size(); j++) {
+                if (!(firstSolve.get(j).equals(compareSolve.get(j))))  {
+                    empty(Type.INPUTS);
+                    return false;
+                }
+            }
+
+            compareSolve.clear();
+
+        }
+        return true;
+    }
+
+    public void remove(int min, int max) {
+        int removed = 0;
+        outer:
+        do {
+            for (int i = 0; i < squares.size(); i++) {
+                int rand = random.nextInt(80);
+                if (squares.get(rand).hasNumber()) {
+                    squares.get(rand).setNumber(0, false);
+                    removed++;
+                    if (removed > max) break outer;
+                }
+            }
+        } while (removed < min);
+    }
+
+    public void removed(int min, int max) {
+        for (int i = 0; i < 3; i++) {
+            int rand = random.nextInt(80);
+
+        }
     }
 
     public boolean generateRandomRows(int rowAmount) {
@@ -167,14 +237,11 @@ public class Grid {
 
     public void solve() {
 
-        int row, pos;
-        row = 0;
-        pos = 0;
+        int row = 0, pos = 0;
 
         all:
         // Make boolean,  If checked all numbers and no solution found, return false
         while (!isFilled()) {
-            outer:
             for (int i = row; i < 9; i++) {
                 inner:
                 for (int j = pos; j < 9; j++) {
@@ -213,7 +280,6 @@ public class Grid {
                         }
                     }
                 }
-                pos = 0;
             }
         }
         for (Square square : squares) {
@@ -354,30 +420,12 @@ public class Grid {
 
     }
 
-    public void remove(int min, int max) {
-        int removed = 0;
-        outer:
-        do {
-            for (int i = 0; i < squares.size(); i++) {
-                int rand = random.nextInt(80);
-                if (squares.get(rand).hasNumber()) {
-                    squares.get(rand).setNumber(0, false);
-                    removed++;
-                    if (removed > max) break outer;
-                }
-            }
-        } while (removed < min);
-    }
-
     public void selectedSolve(int number, boolean lock) {
 
-        int row, pos;
-        row = 0;
-        pos = 0;
+        int row = 0, pos = 0;
 
         all:
         while (!isFilled()) {
-            outer:
             for (int i = row; i < 9; i++) {
                 inner:
                 for (int j = pos; j < 9; j++) {
@@ -395,7 +443,7 @@ public class Grid {
                                     break;
                                 }
                             }
-                            // Same rand every time
+
                             if (square.isEmpty()) square.setNumber(number, false);
                             else square.setNumber(square.getNumber() + 1, false);
                             if (number != 1) {
@@ -437,44 +485,21 @@ public class Grid {
 
         // Make all Squares locked
         if (lock) {
-            for (Square square : getSquares()) {
+            for (Square square : squares) {
                 square.setNumber(square.getNumber(), true);
             }
         }
     }
 
-    public boolean isUnique() {
-        selectedSolve(1, false);
-
-        List<Integer> firstSolve, compareSolve;
-        firstSolve = new ArrayList<>();
-        compareSolve = new ArrayList<>();
-
+    public List<Integer> getEmptySquares() {
+        List<Integer> emptySquares = new ArrayList<>();
         for (Square square : squares) {
-            firstSolve.add(square.getNumber());
+            if (square.isEmpty()) emptySquares.add(square.getUniqueId());
         }
-
-        for (int i = 2; i < 10; i++) {
-
-            System.out.println("Test");
-
-            empty(Type.INPUTS);
-            selectedSolve(i, false);
-            for (Square square : squares) {
-                compareSolve.add(square.getNumber());
-            }
-            for (int j = 0; j < squares.size(); j++) {
-                if (!firstSolve.get(j).equals(compareSolve.get(j))) {
-                    empty(Type.INPUTS);
-                    return false;
-                }
-            }
-
-            compareSolve.clear();
-
-        }
-        return true;
+        return emptySquares;
     }
+
+
 
     public boolean noPressed() {
         for (Square square : getSquares()) {

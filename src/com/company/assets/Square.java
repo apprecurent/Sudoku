@@ -151,22 +151,35 @@ public class Square {
         }
 
         // loop through all the fields (row, column, box) and do these checks instead (good for highlighting associated squares aswell)
-        for (Field field : getFields()) {
-            if (field.hasNumber(number, field.getId())) {
-                error = true;
-                break;
+        if (this.id.getRow().hasNumber(number, getColumn().getId()) || this.id.getColumn().hasNumber(number, getRow().getId()) || getBox().hasNumber(number, getUniqueId())) {
+            for (Field field : getFields()) {
+                for (Square square : field.getSquares()) {
+                    if (square.getNumber() == number) {
+                        error = true;
+                        square.setError(true);
+                    } else square.setError(false);
+                    square.setColor();
+                }
             }
         }
 
-        if (error) {
-            lblNumber.setForeground(Color.RED);
-        } else if (locked) {
-            lblNumber.setForeground(Color.BLACK);
-        } else {
-            lblNumber.setForeground(new Color(25, 110, 140));
-        }
-
+        setColor();
     }
+
+    public void setColor() {
+        if (error) lblNumber.setForeground(Color.RED);
+        else if (locked) lblNumber.setForeground(Color.BLACK);
+        else lblNumber.setForeground(new Color(25, 110, 140));
+    }
+
+    public void setError(boolean error) {
+        this.error = error;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
     
     public void setNote(int note) {
 
@@ -195,7 +208,7 @@ public class Square {
     }
 
     public int getUniqueId() {
-        return col + (row - 1) * 9;
+        return col + (row - 1) * 9 - 1;
     }
 
     public Column getColumn() {
@@ -231,11 +244,12 @@ public class Square {
         
          */
         g.setColor(Color.WHITE);
-        if (isMarked()) {
-            g.setColor(new Color(160, 200, 215));
-        }
+
         if (isHighlighted()) {
             g.setColor(new Color(220, 220, 230));
+        }
+        if (isMarked()) {
+            g.setColor(new Color(160, 200, 215));
         }
         if (isHovered()) {
             g.setColor(new Color(195, 215, 250));
@@ -290,16 +304,8 @@ public class Square {
         return this.pressed;
     }
 
-    public void setError(boolean error) {
-        this.error = error;
-    }
-
     public boolean hasError() {
         return this.error;
-    }
-
-    public void setLocked(boolean locked) {
-        this.locked = locked;
     }
 
     public boolean isLocked() {
