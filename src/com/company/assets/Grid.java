@@ -5,12 +5,13 @@
  */
 package com.company.assets;
 
+import com.company.util.Util;
+
 import java.awt.Graphics;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.swing.JPanel;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.*;
 
 /**
  * @author ville
@@ -33,7 +34,6 @@ public class Grid {
      */
 
 
-
     public Grid(JPanel panel) {
         this.panel = panel;
         this.random = new Random();
@@ -42,7 +42,7 @@ public class Grid {
 
     }
 
-    private final void init() {
+    private void init() {
         this.squares = new ArrayList<>();
         this.columns = new ArrayList<>();
         this.rows = new ArrayList<>();
@@ -56,10 +56,9 @@ public class Grid {
 
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                squares.add(new Square(this, new Id(columns.get(i), rows.get(j))));
+                squares.add(new Square(this, new Id(columns.get(j), rows.get(i))));
             }
         }
-        generateSudoku(Difficulty.EASY);
     }
 
     public void fill() {
@@ -83,24 +82,246 @@ public class Grid {
         /*
 
          */
+        long startTime = System.nanoTime();
+        generateRandomSolve();
+        removeTest();
+        System.out.println(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) + " ms.");
+    }
 
+    public List<Square> getTakenSquares() {
+        List<Square> takenSquares = new ArrayList<>();
+        for (Square square : squares) {
+            if (square.hasNumber()) takenSquares.add(square);
+        }
+        return takenSquares;
+    }
 
+    public boolean continuousSolve() {
+        List<Square> emptySquares = new ArrayList<>(getAvailableSquares());
+        List<List<Integer>> values = new ArrayList<>();
 
+        int startNumber = 1;
+        int start = 0;
+        boolean success = true;
+
+        all:
+        while (startNumber < 10) {
+            outer:
+            while (!isFilled()) {
+                inner:
+                for (int i = start; i < emptySquares.size(); i++) {
+                    if (i == -1) {
+                        success = false;
+                        break all;
+                    }
+                    Square square = emptySquares.get(i);
+                    for (int j = 0; j < 9; j++) {
+                        if (startNumber == 1) {
+                            if (square.getNumber() == 9) {
+                                break;
+                            }
+                        } else {
+                            if (square.getNumber() == startNumber - 1) {
+                                break;
+                            }
+                        }
+
+                        if (square.isEmpty()) square.setNumber(startNumber, false);
+                        else square.setNumber(square.getNumber() + 1, false);
+
+                        if (startNumber != 1) {
+                            if (square.getNumber() == 10) {
+                                square.setNumber(1, false);
+                            }
+                        }
+
+                        if (!square.hasError()) {
+                            continue inner;
+                        }
+                    }
+                    square.setNumber(0, false);
+                    start = i - 1;
+                    continue outer;
+                }
+            }
+            List<Integer> theseValues = new ArrayList<>();
+
+            for (Square square : emptySquares) theseValues.add(square.getNumber());
+
+            values.add(theseValues);
+
+            if (startNumber > 1) {
+                for (int i = 0; i < emptySquares.size(); i++) {
+                    if (!values.get(startNumber - 2).get(i).equals(values.get(startNumber - 1).get(i))) {
+                        success = false;
+                        break all;
+                    }
+                }
+            }
+            empty(Type.INPUTS);
+            startNumber++;
+        }
+        empty(Type.INPUTS);
+        return success;
+    }
+
+    public List<Square> getSquares(int number) {
+        List<Square> list = new ArrayList<>();
+        for (Square square : getSquares()) {
+            if (square.getNumber() == number) list.add(square);
+        }
+
+        return list;
+    }
+
+    public void removeTest() {
+        Map<Square, Integer> map = new HashMap<>();
+        for (Square square : squares) {
+            map.put(square, square.getNumber());
+        }
+
+        /*
+        Try random number
+        If not worked, remove that number from occurring again
+         */
+
+        /*
+        If the size is the same 10 times in a row, (if it timeouts, do better measurements for that) reset the last two squares with the correct numbers to try again.
+        This is because the current branch is most likely dead and will never find a correct solution.
+
+        Possibly switch branch much quicker, as early difficulties the program has could  hint at future problems
+
+        When removing a number from a square, check if that square can take any other value than the one it already had. If not, as the number has to be the same, it is still uniquely solvable
+         */
+            int removed = 0;
+            outer:
+            while (true) {
+                List<Square> availableIds = new ArrayList<>(getTakenSquares());
+                while (removed < 40) {
+                    if (availableIds.size() == 0) System.out.println("TEST");
+
+                    // If size == 0, tried every square, nothing worked, roll back to square numbers and try again
+                    System.out.println("SIZE: " + availableIds.size());
+                    int rand = random.nextInt(availableIds.size());
+                    Square square = availableIds.get(rand);
+                    int squareNumber = square.getNumber();
+                    availableIds.remove(square);
+                    square.setNumber(0, false);
+
+                    for (int i = 0; i < 9; i++) {
+                        if (square.getNumber() >= 9) {
+                            removed++;
+                            System.out.println(removed);
+                            continue outer;
+                        }
+                        square.setNumber(square.getNumber() + 1, false);
+                        if (square.getNumber() == squareNumber) square.setNumber(square.getNumber() + 1, false);
+                        if (square.hasError()) break;
+
+                    }
+                    empty(Type.INPUTS);
+
+                    if (continuousSolve()) {
+                        removed++;
+                        System.out.println(removed);
+                        continue outer;
+
+                    } else {
+                        square.setNumber(map.get(square), true);
+                    }
+                }
+                break;
+
+            }
+
+    }
+
+    public boolean generateRandomSolve() {
+        /*
+        Loop while board is not full
+        For loop while i is smaller than the amount of empty squares
+        The selected square is equal to the position it has of the empty squares
+        For loop nine times (future check how many available numbers each square has)
+        Start with placing in a random number in the square, put that number in HashMap along with the squareId
+        If no error, procceed to next square
+        If has error, set square to 0 and go bac to previous square and increase it as long as the value is not equal to the value in the hashmap
+         */
+        Map<Square, Integer> squareStartNumberMap = new HashMap<>();
+        List<Square> availableSquares = new ArrayList<>();
+
+        for (Square square : getAvailableSquares()) {
+            squareStartNumberMap.put(square, random.nextInt(9) + 1);
+            availableSquares.add(square);
+        }
+
+        int start = 0;
+        int counter = 0;
+
+        outer:
+        while (!isFilled()) {
+            counter++;
+            if (counter > 500 || start == -1) return false;
+
+            // Algorithm went back to the first square and could still not insert a number without error
+            inner:
+            for (int i = start; i < availableSquares.size(); i++) {
+                Square square = availableSquares.get(i);
+                int number = squareStartNumberMap.get(square);
+                for (int j = 0; j < 9; j++) {
+
+                    // Check to see if all numbers have been tested given the starting number
+                    if (number == 1) {
+                        if (square.getNumber() == 9) break;
+                    } else {
+                        if (square.getNumber() == number - 1) break;
+                    }
+
+                    // Set the correct number depending on if the square is empty or not
+                    if (square.isEmpty()) square.setNumber(number, false);
+                    else square.setNumber(square.getNumber() + 1, false);
+                    // If the current square is listed in the map
+
+                    // If the starting number is not 1, and the current number is 10, set the number back to 1 to loop back around
+                    if (number != 1) {
+                        if (square.getNumber() >= 10) square.setNumber(1, false);
+                    }
+
+                    // If the current square does not have error, proceed to next square
+                    if (!square.hasError()) continue inner;
+                }
+                square.setNumber(0, false);
+                start = --i;
+                continue outer;
+            }
+        }
+
+        // Replace all numbers in locked mode to get rid of errors
+        for (Square square : availableSquares) {
+            square.setNumber(square.getNumber(), true);
+        }
+        return true;
+
+    }
+
+    // Exception for when id is too large or too small
+    public Square getSquare(int id) {
+        for (Square square : squares) {
+            if (square.getUniqueId() == id) return square;
+        }
+
+        // Exception here
+        return null;
     }
 
     public void generateSudoku(Difficulty difficulty) {
 
         int min = 0, max = 0;
+        int counter = 0;
 
         List<Integer> defaultValues = new ArrayList<>();
 
         // If timeout, run again
-        if (!generateRandomRows(8)) {
-            empty(Type.ALL);
-            generateSudoku(difficulty);
-        }
-
-        solve();
+        generateRandomSolve();
 
         for (Square square : squares) {
             defaultValues.add(square.getNumber());
@@ -116,33 +337,187 @@ public class Grid {
                 max = 48;
                 break;
             case HARD:
-                min = 50;
-                max = 51;
+                min = 53;
+                max = 54;
                 break;
         }
 
-        for (int i = 0; i < 1; i++){
-            int finalMin = min;
-            int finalMax = max;
-            AtomicInteger counter = new AtomicInteger();
-            Thread thread = new Thread(() -> {
-                // Put code in here
-                do {
-                    counter.getAndIncrement();
-                    System.out.println("ITERATION: " + counter);
-                    empty(Type.ALL);
-                    for (int j = 0; j < defaultValues.size(); j++) {
-                        squares.get(j).setNumber(defaultValues.get(j), true);
-                    }
-                    // Optimize this
-                    remove(finalMin, finalMax);
-                } while (!isUnique());
-                empty(Type.INPUTS);
 
-            });
-            thread.start();
+        // Put code in here
+        do {
+            counter++;
+            System.out.println("ITERATION: " + counter);
+            empty(Type.ALL);
+            for (int j = 0; j < defaultValues.size(); j++) {
+                squares.get(j).setNumber(defaultValues.get(j), true);
+            }
+            // Optimize this
+            remove(min, max);
+        } while (!isUnique());
+        empty(Type.INPUTS);
+
+
+        getPanel().repaint();
+
+
+
+        /*
+        int counter = 0;
+        do {
+            counter++;
+            System.out.println("ITERATION: " + counter);
+            empty(Type.ALL);
+            for (int j = 0; j < defaultValues.size(); j++) {
+                squares.get(j).setNumber(defaultValues.get(j), true);
+            }
+            // Optimize this
+            remove(min, max);
+        } while (!isUnique());
+        empty(Type.INPUTS);
+         */
+
+    }
+
+
+    public void solve(boolean locked) {
+        /*
+        Make a HashMap of Squares and a list of possible numbers that can go in that Square, this Map should be sorted in order of size of the possible numbers list. (if the size of the list is zero for every number, the puzzle is unsolvable)
+        Make continuous loop that executes as long as the Grid is not full
+        For each Square in the HashMap, loop through the list of all possible numbers and check if they are possible
+        (None of the fields of that Square contain the same value AND that number is not stored in the HashMap for a Square that belongs to the same Field as the one compared)
+
+        If Store the number for that Square together with the Square's id in another HashMap
+        Continue to next Square
+
+        If all the numbers for a Square results in errors, go back to the next possible (editable) Square and change its value to the next possible value in it's HashMap's value list
+         */
+
+        Map<Square, List<Integer>> squareValuesMap = new LinkedHashMap<>();
+        for (Square availableSquare : getAvailableSquares()) {
+            Set<Integer> takenNumbersSet = new HashSet<>(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9));
+            for (Square fieldSquare : availableSquare.getAssociatedSquares()) {
+                if (!fieldSquare.isEmpty()) takenNumbersSet.remove(fieldSquare.getNumber());
+            }
+            List<Integer> values = new ArrayList<>(takenNumbersSet);
+            squareValuesMap.put(availableSquare, values);
         }
 
+        LinkedHashMap<Square, List<Integer>> sortedMap = Util.sortMapByValue(squareValuesMap);
+        List<Square> squareList = new ArrayList<>(sortedMap.keySet());
+
+
+        int index = 0;
+        outer:
+        while (!isFilled()) {
+            inner:
+            for (int i = index; i < squareList.size(); ) {
+                Square square = squareList.get(i);
+                List<Integer> valueList = sortedMap.get(square);
+                int currentSquareIndex = valueList.indexOf(square.getNumber());
+                if (currentSquareIndex > valueList.size()) currentSquareIndex = -1;
+                for (int j = currentSquareIndex; j < valueList.size(); j++) {
+                    if (square.getNumber() == valueList.get(valueList.size() - 1)) break;
+                    // Set it to one above of what it currently is
+                    square.setNumber(valueList.get(j + 1), false);
+
+                    if (!square.hasError()) {
+                        i++;
+                        continue inner;
+                    }
+                }
+                square.setNumber(0, false);
+
+                index = --i;
+                continue outer;
+            }
+        }
+
+    }
+
+    public void solved() {
+        List<Square> shuffledSquares = new ArrayList<>(getAvailableSquares());
+        Collections.shuffle(shuffledSquares);
+
+        Thread thread = new Thread(() -> {
+            all:
+            while (!isFilled()) {
+                inner:
+                for (int i = 0; i < shuffledSquares.size(); i++) {
+                    Square square = shuffledSquares.get(i);
+                    for (int j = square.getNumber(); j < 9; j++) {
+                        if (square.getNumber() == 9) break;
+                        square.setNumber(square.getNumber() + 1, false);
+                        if (!square.hasError())
+                            continue inner;
+
+                    }
+                    square.setNumber(0, false);
+                    --i;
+                    continue all;
+                }
+            }
+        });
+        thread.start();
+
+
+    }
+
+    public void solve() {
+
+
+        Thread thread = new Thread(() -> {
+            int row = 0, pos = 0;
+
+
+            all:
+            // Make boolean,  If checked all numbers and no solution found, return false
+            while (!isFilled()) {
+                for (int i = row; i < 9; i++) {
+                    inner:
+                    for (int j = pos; j < 9; j++) {
+                        Square square = rows.get(i).getSquares().get(j);
+                        if (!square.hasNumber() || !square.isLocked()) {
+                            // Try to place every number in Square to check for errors.
+                            for (int k = 0; k < 9; k++) {
+
+                                if (square.getNumber() == 9) {
+                                    break;
+                                }
+                                square.setNumber(square.getNumber() + 1, false);
+                                if (!square.hasError()) {
+                                    continue inner;
+                                }
+                            }
+                            square.setNumber(0, false);
+                            // Every number was tested for a cell and all yieled errors.
+                            // go back to last inputed cell and replace
+
+                            for (int l = i; l >= 0; l--) {
+                                // Set to 8 every time l decreases
+                                for (int p = j - 1; p >= 0; p--) {
+                                    // Do check to prevent get(-1)
+                                    Square lastSquare = rows.get(l).getSquares().get(p);
+                                    if (lastSquare.isLocked()) {
+                                        continue;
+                                    }
+
+                                    row = l;
+                                    pos = p;
+                                    continue all;
+
+                                    // continue
+                                }
+                                j = 9;
+                            }
+                        }
+                    }
+                }
+            }
+            for (Square square : squares) {
+                square.setNumber(square.getNumber(), true);
+            }
+        });
+        thread.start();
 
     }
 
@@ -169,7 +544,7 @@ public class Grid {
             }
 
             for (int j = 0; j < emptySquares.size(); j++) {
-                if (!(firstSolve.get(j).equals(compareSolve.get(j))))  {
+                if (!(firstSolve.get(j).equals(compareSolve.get(j)))) {
                     empty(Type.INPUTS);
                     return false;
                 }
@@ -196,11 +571,56 @@ public class Grid {
         } while (removed < min);
     }
 
-    public void removed(int min, int max) {
-        for (int i = 0; i < 3; i++) {
-            int rand = random.nextInt(80);
+    public void generateStart() {
+        StringBuilder numbers = new StringBuilder();
 
+        for (int i = 0; i < 3; i++) {
+            outer:
+            while (true) {
+                numbers.setLength(0);
+                numbers.append("123456789");
+                for (int j = 0; j < rows.size(); j++) {
+                    int rand = random.nextInt(numbers.length());
+                    Square square = rows.get(i).getSquares().get(j);
+                    square.setNumber(Integer.parseInt(String.valueOf(numbers.charAt(rand))), true);
+                    numbers.deleteCharAt(rand);
+
+                    if (square.hasError()) {
+                        for (int k = 0; k < j + 1; k++) {
+                            rows.get(i).getSquares().get(k).setNumber(0, false);
+                        }
+                        continue outer;
+                    }
+                }
+                break;
+            }
         }
+        /*
+
+        int counter = 0;
+        for (Square square : columns.get(1).getSquares()) {
+            numbers.deleteCharAt(square.getNumber() - 1);
+            counter++;
+        }
+         */
+        for (int i = 3; i < 9; ) {
+            numbers.setLength(0);
+            numbers.append("123456789");
+            int rand = random.nextInt(numbers.length());
+            Square square = columns.get(0).getSquares().get(i);
+            int integer = Integer.parseInt(String.valueOf(numbers.charAt(rand)));
+            square.setNumber(integer, true);
+            numbers.deleteCharAt(rand);
+
+            if (square.hasError()) {
+                for (int j = 3; j < i + 1; j++) {
+                    columns.get(0).getSquares().get(j).setNumber(0, false);
+                }
+                i = 3;
+            } else i++;
+        }
+
+
     }
 
     public boolean generateRandomRows(int rowAmount) {
@@ -235,57 +655,6 @@ public class Grid {
         return true;
     }
 
-    public void solve() {
-
-        int row = 0, pos = 0;
-
-        all:
-        // Make boolean,  If checked all numbers and no solution found, return false
-        while (!isFilled()) {
-            for (int i = row; i < 9; i++) {
-                inner:
-                for (int j = pos; j < 9; j++) {
-                    Square square = rows.get(i).getSquares().get(j);
-                    if (!square.hasNumber() || !square.isLocked()) {
-                        // Try to place every number in Square to check for errors.
-                        for (int k = 0; k < 9; k++) {
-                            if (square.getNumber() == 9) {
-                                break;
-                            }
-                            square.setNumber(square.getNumber() + 1, false);
-                            if (!square.hasError()) {
-                                continue inner;
-                            }
-                        }
-                        square.setNumber(0, false);
-                        // Every number was tested for a cell and all yieled errors.
-                        // go back to last inputed cell and replace 
-
-                        for (int l = i; l >= 0; l--) {
-                            // Set to 8 every time l decreases
-                            for (int p = j - 1; p >= 0; p--) {
-                                // Do check to prevent get(-1)
-                                Square lastSquare = rows.get(l).getSquares().get(p);
-                                if (lastSquare.isLocked()) {
-                                    continue;
-                                }
-
-                                row = l;
-                                pos = p;
-                                continue all;
-
-                                // continue
-                            }
-                            j = 9;
-                        }
-                    }
-                }
-            }
-        }
-        for (Square square : squares) {
-            square.setNumber(square.getNumber(), true);
-        }
-    }
 
     public void reverseSolve() {
         int row, pos;
@@ -424,6 +793,7 @@ public class Grid {
 
         int row = 0, pos = 0;
 
+
         all:
         while (!isFilled()) {
             for (int i = row; i < 9; i++) {
@@ -489,6 +859,90 @@ public class Grid {
                 square.setNumber(square.getNumber(), true);
             }
         }
+
+    }
+
+    public void selectedSolveV2(int number, boolean lock) {
+
+        Long startTime = System.nanoTime();
+        // Put the squareId and the amount of possible square values for that square in Map
+        Map<Integer, Integer> possibleNumberMap = new HashMap<>();
+        Set<Integer> takenNumbers = new HashSet<>();
+        for (Square square : getAvailableSquares()) {
+            for (Square innerSquare : square.getAssociatedSquares()) {
+                if (innerSquare.getNumber() != 0) takenNumbers.add(innerSquare.getNumber());
+            }
+            possibleNumberMap.put(square.getUniqueId(), 9 - takenNumbers.size());
+            takenNumbers.clear();
+        }
+
+        // Sort these from lowest to highest amount of square values, put the corresponding squares into list for later use
+        LinkedHashMap<Integer, Integer> sortedMap = Util.sortByValue(possibleNumberMap);
+
+        List<Square> finalSquares = new ArrayList<>();
+
+        for (Integer i : sortedMap.keySet()) finalSquares.add(getSquare(i));
+
+        System.out.println(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
+
+        int start = 0;
+
+        all:
+        while (!isFilled()) {
+            inner:
+            for (int i = start; i < finalSquares.size(); i++) {
+                Square square = finalSquares.get(i);
+                // Try to place every number in Square to check for errors. (improve with first storing the possible numbers by looking at the already locked values that exist)
+                for (int k = 0; k < 9; k++) {
+                    // Starts to count from 1, normally
+                    if (number == 1) {
+                        if (square.getNumber() == 9) {
+                            break;
+                        }
+                    } else {
+                        if (square.getNumber() == number - 1) {
+                            break;
+                        }
+                    }
+
+                    if (square.isEmpty()) square.setNumber(number, false);
+                    else square.setNumber(square.getNumber() + 1, false);
+                    if (number != 1) {
+                        if (square.getNumber() == 10) {
+                            square.setNumber(1, false);
+                        }
+                    }
+
+                    if (!square.hasError()) {
+                        continue inner;
+                    }
+                }
+                square.setNumber(0, false);
+                // Every number was tested for a cell and all yieled errors.
+                // go back to last inputed cell and replace
+
+                for (int j = i - 1; j >= 0; j--) {
+                    // Set to 8 every time l (row) decreases
+                    // Do check to prevent get(-1)
+                    Square lastSquare = finalSquares.get(j);
+                    if (lastSquare.isLocked()) {
+                        continue;
+                    }
+
+                    start = j;
+
+                    continue all;
+                }
+            }
+        }
+
+
+        // Make all Squares locked
+        if (lock) {
+            for (Square square : squares) {
+                square.setNumber(square.getNumber(), true);
+            }
+        }
     }
 
     public List<Integer> getEmptySquares() {
@@ -498,7 +952,6 @@ public class Grid {
         }
         return emptySquares;
     }
-
 
 
     public boolean noPressed() {
@@ -602,6 +1055,15 @@ public class Grid {
             }
         }
         return squares;
+    }
+
+    public List<Square> getAvailableSquares() {
+        List<Square> availableSquares = new ArrayList<>();
+
+        for (Square square : squares) {
+            if (!square.hasNumber()) availableSquares.add(square);
+        }
+        return availableSquares;
     }
 
     public List<Square> getSquares() {

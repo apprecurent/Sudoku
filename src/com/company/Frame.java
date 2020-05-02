@@ -128,6 +128,10 @@ public class Frame extends javax.swing.JFrame {
             else mode = Mode.WRITE;
         }
 
+        if (evt.getKeyCode() == KeyEvent.VK_R) gamePanel.generateNewGrid();
+
+        gamePanel.clearMarkedSquares();
+
         /*
          Loop through, to write the square must be empty, unlocked and the keypress must be between 1-9
          Check the currently activated mode
@@ -136,7 +140,7 @@ public class Frame extends javax.swing.JFrame {
             if (square.isPressed() && !square.isLocked()) {
                 if (evt.getKeyCode() >= 49 && evt.getKeyCode() <= 57) {
                     if (mode == Mode.WRITE) {
-                        square.setNumber(evt.getKeyCode() - 48, false);
+                        square.setNumber(evt.getKeyCode() - 48);
                         // Do markings if the mode is WRITE
                         for (Square s : gamePanel.getGrid().getSquares()) {
                             if (s.getNumber() == square.getNumber()) s.setMarked(true);

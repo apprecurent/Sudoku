@@ -6,10 +6,11 @@
 package com.company.assets;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- *
  * @author ville
  */
 public class Box extends Field {
@@ -18,15 +19,7 @@ public class Box extends Field {
         super(grid, id);
     }
 
-    public boolean hasNumber(int number, int pos) {
-        for (int i = 0; i < getSquares().size(); i++) {
-            if (getSquares().get(i).getNumber() == number && getSquareIds().get(i) != pos) {
-                return true;
-            }
-        }
-        return false;
-    }
-
+    // Pos is the position of the square to not check???
     public List<Square> getSquares() {
         List<Square> squares = new ArrayList<>();
 
@@ -42,16 +35,5 @@ public class Box extends Field {
         return squares;
     }
 
-    public List<Integer> getSquareIds() {
-        List<Integer> squareIds = new ArrayList<>();
-
-        // First row
-        for (Square square : getSquares()) {
-            squareIds.add(square.getUniqueId());
-          //  int i = getId() + (getId() - 1) * 2 + 9 * (square.getRow().getId() - 1);
-        }
-
-        return squareIds;
-    }
 
 }

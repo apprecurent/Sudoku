@@ -8,6 +8,7 @@ package com.company.assets;
 import com.company.assets.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -18,18 +19,7 @@ public class Column extends Field{
     public Column(Grid grid, int id) {
         super(grid, id);
     }
-    
-    public boolean hasNumber(int number, int pos) {
-        
-        
-        for (Square square : getSquares()) {
-            if (square.getNumber() == number && square.getRow().getId() != pos) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
+
     public List<Square> getSquares() {
         List<Square> squares = new ArrayList<>();
         

@@ -6,19 +6,18 @@
 package com.company.assets;
 
 import com.company.GamePanel;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 /**
- *
  * @author ville
  */
 public class Square {
@@ -31,7 +30,7 @@ public class Square {
 
     private boolean highlighted, pressed, error, locked, marked, hovered;
 
-    private JLabel lblNumber, lblNote;
+    private JLabel lblNumber;
 
     private List<JLabel> notes;
 
@@ -41,7 +40,7 @@ public class Square {
      * Constructor of a Square, assign var data (make separate method init?)
      *
      * @param grid The grid which this Square belong sto
-     * @param id The identifier of the Square (row and column)
+     * @param id   The identifier of the Square (row and column)
      */
     public Square(Grid grid, Id id) {
         this.id = id;
@@ -69,9 +68,9 @@ public class Square {
          */
         for (int i = 0; i < 9; i++) {
             int vertical = 0, horizontal = 0;
-            lblNote = new JLabel();
+            JLabel lblNote = new JLabel();
             grid.getPanel().add(lblNote);
-            lblNote.setText(String.valueOf(i+1));
+            lblNote.setText(String.valueOf(i + 1));
             lblNote.setLocation(new Point((col - 1) * 50 + 5, (row - 1) * 50 + 5));
             lblNote.setSize(new Dimension(40, 40));
             lblNote.setFont(new Font("Arial", Font.PLAIN, 10));
@@ -127,7 +126,6 @@ public class Square {
     }
 
 
-
     public void setNumber(int number, boolean locked) {
 
         /*
@@ -137,6 +135,8 @@ public class Square {
         clearNotes();
 
         // Set vars
+        // temp
+        int previousNumber = this.number;
         this.number = number;
         this.locked = locked;
         this.error = false;
@@ -151,40 +151,100 @@ public class Square {
         }
 
         // loop through all the fields (row, column, box) and do these checks instead (good for highlighting associated squares aswell)
-        if (this.id.getRow().hasNumber(number, getColumn().getId()) || this.id.getColumn().hasNumber(number, getRow().getId()) || getBox().hasNumber(number, getUniqueId())) {
-            for (Field field : getFields()) {
-                for (Square square : field.getSquares()) {
-                    if (square.getNumber() == number) {
-                        error = true;
-                        square.setError(true);
-                    } else square.setError(false);
-                    square.setColor();
-                }
+        /*
+        FINALLY
+         */
+
+        /*
+
+
+        for (Square square : getAssociatedSquares()) {
+            if (square.hasDuplicateValue()) {
+                square.setError(true);
             }
+            if (square.getNumber() == number && number != 0) {
+                this.error = true;
+                square.setError(true);
+            }
+            else square.setError(false);
+        }
+         */
+
+
+        /*
+        HOLY SHIT, NEVER AGAIN
+         */
+        int usedNumber = number == 0 ? previousNumber : number;
+        for (Square square : grid.getSquares(usedNumber)) {
+            square.setError(square.hasDuplicateValue() && square.getNumber() != 0);
         }
 
+
+        /*
+
+        for (Field field : getFields()) {
+            for (Square square : field.getSquares()) {
+                square.setError(field.hasNumber(square.getNumber(), square.getUniqueId()));
+            }
+        }
+         */
         setColor();
     }
 
+    public void setNumber(int number) {
+        this.number = number;
+
+        lblNumber.setText(String.valueOf(number));
+        if (number == 0) {
+            lblNumber.setText("");
+        }
+        for (Square square : grid.getSquares()) {
+            square.setError(square.hasDuplicateValue() && square.getNumber() != 0);
+        }
+    }
+
+    public boolean hasDuplicateValue() {
+        for (Square square : getAssociatedSquares()) {
+            if (square.getNumber() == number) return true;
+        }
+        return false;
+    }
+
+    public Set<Square> getAssociatedSquares() {
+        Set<Square> associated = new HashSet<>();
+        associated.add(this);
+        for (Field field : getFields()) {
+            associated.addAll(field.getSquares());
+        }
+        associated.remove(this);
+        return associated;
+    }
+
     public void setColor() {
-        if (error) lblNumber.setForeground(Color.RED);
-        else if (locked) lblNumber.setForeground(Color.BLACK);
-        else lblNumber.setForeground(new Color(25, 110, 140));
+        if (locked)
+            lblNumber.setForeground(Color.BLACK);
+        else if (error)
+            lblNumber.setForeground(Color.RED);
+        else
+            lblNumber.setForeground(new Color(25, 110, 140));
+
     }
 
     public void setError(boolean error) {
         this.error = error;
+        setColor();
     }
 
     public void setLocked(boolean locked) {
         this.locked = locked;
+        setColor();
     }
 
-    
+
     public void setNote(int note) {
 
         // Only set notes if the Square is empty
-        if (!hasNumber()) notes.get(note-1).setVisible(!isVisible(note));
+        if (!hasNumber()) notes.get(note - 1).setVisible(!isVisible(note));
     }
 
     public void clearNotes() {
@@ -194,11 +254,11 @@ public class Square {
             }
         }
     }
-    
+
     public boolean isVisible(int note) {
-        return notes.get(note-1).isVisible();
+        return notes.get(note - 1).isVisible();
     }
-    
+
     public int getNumber() {
         return this.number;
     }
@@ -218,18 +278,18 @@ public class Square {
     public Row getRow() {
         return this.id.getRow();
     }
-    
+
     public Box getBox() {
         return grid.getBox(getColumn(), getRow());
     }
-    
+
     public List<Field> getFields() {
         List<Field> fields = new ArrayList<>();
-        
+
         fields.add(getColumn());
         fields.add(getRow());
         fields.add(getBox());
-        
+
         return fields;
     }
 
@@ -243,22 +303,21 @@ public class Square {
         g.drawLine((col - 1) * 50, row* 50, (col - 1) * 50, (row - 1) * 50);
         
          */
+
+        // If no condition is true, keep the square white
         g.setColor(Color.WHITE);
 
-        if (isHighlighted()) {
-            g.setColor(new Color(220, 220, 230));
-        }
-        if (isMarked()) {
-            g.setColor(new Color(160, 200, 215));
-        }
-        if (isHovered()) {
-            g.setColor(new Color(195, 215, 250));
-        }
-        if (isPressed()) {
-            g.setColor(new Color(145, 180, 230));
-            // g.setColor(new Color(120, 190, 210));
-        }
+        // Lower = high prio (that color will take presidence over other) reversed for higher up
+        if (isHighlighted()) g.setColor(new Color(220, 220, 230));
+        if (isMarked()) g.setColor(new Color(160, 200, 215));
+        if (isHovered()) g.setColor(new Color(195, 215, 250));
+        if (isPressed()) g.setColor(new Color(145, 180, 230));
+        if (hasError()) g.setColor(new Color(255, 190, 180));
+        if (hasError() && isHovered()) g.setColor(new Color(255, 140, 120));
+
         g.fillRect((col - 1) * 50, (row - 1) * 50, 50, 50);
+
+        // Draw the outlinings with black
         g.setColor(Color.BLACK);
 
         g.drawRect((col - 1) * 50, (row - 1) * 50, 50, 50);
@@ -321,7 +380,7 @@ public class Square {
     }
 
     public String toString() {
-        return "Column: " + getColumn().getId() + " | Row: " + getRow().getId();
+        return "Column: " + getColumn().getId() + " | Row: " + getRow().getId() + " | ID: " + getUniqueId();
     }
 
 }

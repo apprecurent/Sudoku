@@ -34,7 +34,7 @@ public class GamePanel extends javax.swing.JPanel {
 
     public GamePanel() {
         initComponents();
-        grid = new Grid(this);
+        generateNewGrid();
         
     }
 
@@ -46,11 +46,18 @@ public class GamePanel extends javax.swing.JPanel {
         return this.grid;
     }
 
+    public void generateNewGrid() {
+        if (grid != null) grid.empty(Type.ALL);
+        this.grid = new Grid(this);
+        grid.fill();
+        repaint();
+    }
+
     /**
      * Paints this panel
      * @param g
      */
-    public void paintComponent(Graphics g) {
+    protected void paintComponent(Graphics g) {
         // Paint the grid and all its components
         grid.paint(g);
     }
@@ -177,10 +184,8 @@ public class GamePanel extends javax.swing.JPanel {
                  */
 
                 // Highlight all the squares that are linked with the one clicked (row, column and the box)
-                for (Field field : square.getFields()) {
-                    for (Square s : field.getSquares()) {
-                        s.setHighlighted(true);
-                    }
+                for (Square associatedSquare : square.getAssociatedSquares()) {
+                    associatedSquare.setHighlighted(true);
                 }
 
                 // Mark all the squares with the same number as the one clicked
