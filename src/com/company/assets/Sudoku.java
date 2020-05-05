@@ -1,6 +1,8 @@
 package com.company.assets;
 
+import java.util.*;
 import java.awt.*;
+import java.util.List;
 
 public class Sudoku {
 
@@ -8,6 +10,14 @@ public class Sudoku {
 
     public Sudoku(Panel panel) {
         // generateGrid();
+    }
+
+    public void solve() {
+        for (List<Square> innerList : grid.getSplitSquares()) {
+            for (Square square : innerList) {
+
+            }
+        }
     }
 
     public void paint(Graphics g) {

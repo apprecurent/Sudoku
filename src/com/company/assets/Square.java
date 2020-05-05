@@ -188,10 +188,10 @@ public class Square {
             }
         }
          */
-        setColor();
     }
 
     public void setNumber(int number) {
+        clearNotes();
         this.number = number;
 
         lblNumber.setText(String.valueOf(number));
@@ -220,7 +220,7 @@ public class Square {
         return associated;
     }
 
-    public void setColor() {
+    public void color() {
         if (locked)
             lblNumber.setForeground(Color.BLACK);
         else if (error)
@@ -230,24 +230,35 @@ public class Square {
 
     }
 
+    private Color color;
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
+    public boolean hasColor() {
+        return color != null;
+    }
+
     public void setError(boolean error) {
         this.error = error;
-        setColor();
+        color();
     }
 
     public void setLocked(boolean locked) {
         this.locked = locked;
-        setColor();
+        color();
     }
 
 
     public void setNote(int note) {
 
-        // Only set notes if the Square is empty
+        // Only set notes if the Square is empty, else makes it invisible
         if (!hasNumber()) notes.get(note - 1).setVisible(!isVisible(note));
     }
 
     public void clearNotes() {
+        // Set all notes that are currently active, making them go invisible again
         for (int i = 1; i < 10; i++) {
             if (isVisible(i)) {
                 setNote(i);
@@ -314,6 +325,7 @@ public class Square {
         if (isPressed()) g.setColor(new Color(145, 180, 230));
         if (hasError()) g.setColor(new Color(255, 190, 180));
         if (hasError() && isHovered()) g.setColor(new Color(255, 140, 120));
+        if (hasColor()) g.setColor(color);
 
         g.fillRect((col - 1) * 50, (row - 1) * 50, 50, 50);
 

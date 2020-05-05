@@ -5,13 +5,19 @@
  */
 package com.company;
 
+import com.company.assets.Grid;
 import com.company.assets.Mode;
 import com.company.assets.Square;
+import com.company.util.Util;
 
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author ville
@@ -113,6 +119,7 @@ public class Frame extends javax.swing.JFrame {
 
     /**
      * Detects when a key is pressed
+     *
      * @param evt
      */
     private void formKeyPressed(java.awt.event.KeyEvent evt) {
@@ -130,6 +137,8 @@ public class Frame extends javax.swing.JFrame {
 
         if (evt.getKeyCode() == KeyEvent.VK_R) gamePanel.generateNewGrid();
 
+        if (evt.getKeyCode() == KeyEvent.VK_G) gamePanel.getGrid().normalSolve();
+
         gamePanel.clearMarkedSquares();
 
         /*
@@ -141,9 +150,32 @@ public class Frame extends javax.swing.JFrame {
                 if (evt.getKeyCode() >= 49 && evt.getKeyCode() <= 57) {
                     if (mode == Mode.WRITE) {
                         square.setNumber(evt.getKeyCode() - 48);
+
                         // Do markings if the mode is WRITE
-                        for (Square s : gamePanel.getGrid().getSquares()) {
-                            if (s.getNumber() == square.getNumber()) s.setMarked(true);
+                        for (Square s : gamePanel.getGrid().getSquares(square.getNumber())) {
+                            s.setMarked(true);
+                        }
+
+                        // Won the game
+                        if (gamePanel.getGrid().isFilled() && !gamePanel.getGrid().hasErrors()) {
+                            long endTimeSeconds = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - gamePanel.getGrid().getStartTime());
+
+                            // Insert into scoreboard along with difficulty and attempt number
+                            long minutes = endTimeSeconds / 60;
+                            long seconds = endTimeSeconds % 60;
+
+                            System.out.println("That took " + minutes + " minutes and " + seconds + " seconds.");
+
+                            gamePanel.clearMarkedSquares();
+                            gamePanel.clearHighlightedSquares();
+                            gamePanel.clearHoveredSquares();
+                            gamePanel.clearPressedSquares();
+
+                            Grid grid = gamePanel.getGrid();
+
+                            for (Square s : grid.getSquares()) {
+                                s.setLocked(true);
+                            }
                         }
                         // Repaint the markings
                         repaint();
