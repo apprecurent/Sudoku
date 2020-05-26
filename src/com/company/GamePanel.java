@@ -32,8 +32,7 @@ public class GamePanel extends javax.swing.JPanel {
 
     public GamePanel() {
         initComponents();
-        generateNewGrid();
-        
+        generateEmptyGrid();
     }
 
     /**
@@ -43,8 +42,13 @@ public class GamePanel extends javax.swing.JPanel {
     public Grid getGrid() {
         return this.grid;
     }
+    
+    public void generateEmptyGrid() {
+        this.grid = new Grid(this);
+        repaint();
+    }
 
-    public void generateNewGrid() {
+    public void generateNewGrid(Difficulty difficulty) {
         if (grid != null) grid.empty(Type.ALL);
         this.grid = new Grid(this);
         grid.fill();
@@ -57,7 +61,7 @@ public class GamePanel extends javax.swing.JPanel {
      */
     protected void paintComponent(Graphics g) {
         // Paint the grid and all its components
-        grid.paint(g);
+        if (grid != null) grid.paint(g);
     }
 
     /**
@@ -180,6 +184,7 @@ public class GamePanel extends javax.swing.JPanel {
                 /*
                 Turn these off if highlight setting is off
                  */
+                if (!highlights) break;
 
                 // Highlight all the squares that are linked with the one clicked (row, column and the box)
                 for (Square associatedSquare : square.getAssociatedSquares()) {
@@ -207,6 +212,19 @@ public class GamePanel extends javax.swing.JPanel {
     private void formMouseExited(java.awt.event.MouseEvent evt) {
         // Removed the currently hovering square when exiting (stays blue otherwise)
         clearHoveredSquares();
+    }
+    
+    private boolean hints = false, highlights = true;
+
+    protected void setHints(boolean hints) {
+        this.hints = hints;
+    }
+
+    protected void setMode(boolean selected) {
+    }
+
+    protected void setHightlights(boolean highlights) {
+        this.highlights = highlights;
     }
 
 

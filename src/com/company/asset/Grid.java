@@ -456,7 +456,7 @@ public class Grid {
 
         Map<Square, List<Integer>> squareValuesMap = new LinkedHashMap<>();
         for (Square availableSquare : getAvailableSquares()) {
-            Set<Integer> takenNumbersSet = new HashSet<>(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9));
+            Set<Integer> takenNumbersSet = new HashSet<>(Arrays.asList(1, 2, 3));
             for (Square fieldSquare : availableSquare.getAssociatedSquares()) {
                 if (!fieldSquare.isEmpty()) takenNumbersSet.remove(fieldSquare.getNumber());
             }
