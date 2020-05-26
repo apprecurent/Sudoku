@@ -9,6 +9,9 @@ import com.company.asset.*;
 
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -86,6 +89,11 @@ public class GamePanel extends javax.swing.JPanel {
         repaint();
     }
 
+    public void addNotify() {
+        super.addNotify();
+        requestFocus();
+    }
+
     /**
      * Clear all the squares that are marked
      */
@@ -119,16 +127,16 @@ public class GamePanel extends javax.swing.JPanel {
 
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
         addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            public void mouseMoved(java.awt.event.MouseEvent evt) {
-                formMouseMoved(evt);
+            public void mouseMoved(java.awt.event.MouseEvent e) {
+                formMouseMoved(e);
             }
         });
         addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                formMouseExited(evt);
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                formMouseExited(e);
             }
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                formMousePressed(evt);
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                formMousePressed(e);
             }
         });
 
@@ -146,13 +154,13 @@ public class GamePanel extends javax.swing.JPanel {
 
     /**
      * Detects every time the mouse is moved inside of the panel
-     * @param evt
+     * @param e
      */
-    private void formMouseMoved(java.awt.event.MouseEvent evt) {
+    private void formMouseMoved(java.awt.event.MouseEvent e) {
         // Loop through all the squares to check which square is currently hovered by the cursor
         for (Square square : grid.getSquares()) {
             // If its hovered, set hovered
-            if (square.isHit(new Point(evt.getX(), evt.getY()))) {
+            if (square.isHit(new Point(e.getX(), e.getY()))) {
                 square.setHovered(true);
                 break;
             } else {
@@ -167,9 +175,9 @@ public class GamePanel extends javax.swing.JPanel {
 
     /**
      * Detects every time the mouse if pressed inside of the panel
-     * @param evt
+     * @param e
      */
-    private void formMousePressed(java.awt.event.MouseEvent evt) {
+    private void formMousePressed(java.awt.event.MouseEvent e) {
 
         //  Clear all previous markings to mark new ones
         clearPressedSquares();
@@ -178,7 +186,7 @@ public class GamePanel extends javax.swing.JPanel {
 
         // Loop the squares to check which ones have been hit
         for (Square square : grid.getSquares()) {
-            if (square.isHit(new Point(evt.getX(), evt.getY()))) {
+            if (square.isHit(new Point(e.getX(), e.getY()))) {
                 square.setPressed(true);
 
                 /*
@@ -207,25 +215,29 @@ public class GamePanel extends javax.swing.JPanel {
 
     /**
      * Detects when the mouse exits the panel
-     * @param evt
+     * @param e
      */
-    private void formMouseExited(java.awt.event.MouseEvent evt) {
+    private void formMouseExited(java.awt.event.MouseEvent e) {
         // Removed the currently hovering square when exiting (stays blue otherwise)
         clearHoveredSquares();
     }
     
     private boolean hints = false, highlights = true;
+    private Mode mode = Mode.WRITE;
 
     protected void setHints(boolean hints) {
         this.hints = hints;
     }
 
     protected void setMode(boolean selected) {
+        if (selected) mode = Mode.WRITE;
+        else mode = Mode.NOTE;
     }
 
     protected void setHightlights(boolean highlights) {
         this.highlights = highlights;
     }
+
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

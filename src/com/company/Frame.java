@@ -36,6 +36,8 @@ public class Frame extends javax.swing.JFrame {
         initComponents();
 
         init();
+
+        setFocusable(true);
     }
 
     /**
@@ -129,6 +131,9 @@ public class Frame extends javax.swing.JFrame {
         /*
         Used to switch between note mode and write mode, if only one is down at a time it will turn false on release (see keyReleasedEvent)
          */
+
+        System.out.println("test");
+
         if (evt.getKeyCode() == CONTROL) controlPressed = true;
         if (evt.getKeyCode() == S) sPressed = true;
 
@@ -223,7 +228,7 @@ public class Frame extends javax.swing.JFrame {
         if (evt.getKeyCode() == CONTROL) controlPressed = false;
         if (evt.getKeyCode() == S) sPressed = false;
     }
-    
+
     public GamePanel getGamePanel() {
         return this.gamePanel;
     }
