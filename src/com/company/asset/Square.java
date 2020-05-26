@@ -3,9 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.company.assets;
-
-import com.company.GamePanel;
+package com.company.asset;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,7 +12,6 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.util.*;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 /**
@@ -123,6 +120,11 @@ public class Square {
             // Add the new note to the list
             notes.add(lblNote);
         }
+    }
+
+    public void setNewNumber(int number, boolean locked) {
+        this.number = number;
+        this.locked = locked;
     }
 
 

@@ -5,18 +5,14 @@
  */
 package com.company;
 
-import com.company.assets.Grid;
-import com.company.assets.Mode;
-import com.company.assets.Square;
-import com.company.util.Util;
+import com.company.asset.Grid;
+import com.company.asset.Mode;
+import com.company.asset.Square;
+import com.company.asset.Type;
 
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -137,7 +133,9 @@ public class Frame extends javax.swing.JFrame {
 
         if (evt.getKeyCode() == KeyEvent.VK_R) gamePanel.generateNewGrid();
 
-        if (evt.getKeyCode() == KeyEvent.VK_G) gamePanel.getGrid().normalSolve();
+        else if (evt.getKeyCode() == KeyEvent.VK_G) gamePanel.getGrid().normalSolve();
+
+        else if (evt.getKeyCode() == KeyEvent.VK_E) gamePanel.getGrid().empty(com.company.asset.Type.INPUTS);
 
         gamePanel.clearMarkedSquares();
 
@@ -246,11 +244,7 @@ public class Frame extends javax.swing.JFrame {
         }
         //</editor-fold>
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Frame().setVisible(true);
-            }
-        });
+        java.awt.EventQueue.invokeLater(() -> new Frame().setVisible(true));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

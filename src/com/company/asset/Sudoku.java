@@ -1,6 +1,5 @@
-package com.company.assets;
+package com.company.asset;
 
-import java.util.*;
 import java.awt.*;
 import java.util.List;
 

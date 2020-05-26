@@ -3,14 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.company.assets;
+package com.company.asset;
 
 import com.company.util.Util;
 
 import java.awt.Graphics;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.*;
 
 /**
@@ -85,10 +84,35 @@ public class Grid {
 
          */
         long startTime = System.nanoTime();
+
         generateRandomSolve(true);
         System.out.println(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) + " ms.");
 
-        removeTest();
+        int run = 0;
+
+        List<Integer> defaultValues = new ArrayList<>();
+
+        // If timeout, run again
+
+        for (Square square : squares) {
+            defaultValues.add(square.getNumber());
+        }
+
+        // Put code in here
+        do {
+            run++;
+            System.out.println("Iteration: " + run);
+            empty(Type.ALL);
+            for (int j = 0; j < defaultValues.size(); j++) {
+                squares.get(j).setNumber(defaultValues.get(j), true);
+            }
+            // Optimize this
+            remove(42, 43);
+        } while (!isUnique());
+
+        empty(Type.INPUTS);
+
+        // removeTest();
         System.out.println(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) + " ms.");
 
         begin = System.nanoTime();
@@ -234,9 +258,9 @@ public class Grid {
         int removed = 0;
         outer:
         while (true) {
+            System.out.println(getTakenSquares().size());
             List<Square> availableIds = new ArrayList<>(getTakenSquares());
-            while (removed < 40) {
-                if (availableIds.size() == 0) System.out.println("TEST");
+            while (removed < 3) {
 
                 // If size == 0, tried every square, nothing worked, roll back to square numbers and try again
                 System.out.println("SIZE: " + availableIds.size());
@@ -682,7 +706,7 @@ public class Grid {
         }
 
     }
-    
+
 
     public void normalSolve() {
 

@@ -1,4 +1,4 @@
-package com.company.assets;
+package com.company.asset;
 
 public enum Mode {
 

@@ -5,12 +5,10 @@
  */
 package com.company;
 
-import com.company.assets.*;
+import com.company.asset.*;
 
 import java.awt.Graphics;
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
