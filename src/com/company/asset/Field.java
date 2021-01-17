@@ -46,4 +46,12 @@ public abstract class Field {
     public Grid getGrid() {
         return this.grid;
     }
+
+    @Override
+    public String toString() {
+        return "Field{" +
+                "grid=" + grid +
+                ", id=" + id +
+                '}';
+    }
 }

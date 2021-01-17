@@ -10,7 +10,8 @@ package com.company.asset;
  * @author ville
  */
 public enum Type {
-    
-    ALL, INPUTS, ERRORS
+
+    // The different types
+    ALL, INPUTS
     
 }

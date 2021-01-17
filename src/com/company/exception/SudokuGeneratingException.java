@@ -6,10 +6,7 @@
 package com.company.exception;
 
 /**
- *
+ * When the generation of the Sudoku failed
  * @author ville
  */
-public class SudokuGeneratingException extends Exception {
-    
-    
-}
+public class SudokuGeneratingException extends Exception {}

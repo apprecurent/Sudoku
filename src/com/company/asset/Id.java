@@ -56,4 +56,12 @@ public class Id {
         return this.row;
     }
 
+    @Override
+    public String toString() {
+        return "Id{" +
+                "column=" + column +
+                ", row=" + row +
+                '}';
+    }
+
 }

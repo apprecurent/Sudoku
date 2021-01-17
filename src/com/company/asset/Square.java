@@ -25,6 +25,8 @@ public class Square {
     private int col;
     private int row;
 
+    private Color color;
+
     private boolean highlighted, pressed, error, locked, marked, hovered;
 
     private JLabel lblNumber;
@@ -122,12 +124,11 @@ public class Square {
         }
     }
 
-    public void setNewNumber(int number, boolean locked) {
-        this.number = number;
-        this.locked = locked;
-    }
-
-
+    /**
+     * Sets the number of this square
+     * @param number the number
+     * @param locked locked if true
+     */
     public void setNumber(int number, boolean locked) {
 
         /*
@@ -156,6 +157,10 @@ public class Square {
         }
     }
 
+    /**
+     * Sets the number
+     * @param number the number
+     */
     public void setNumber(int number) {
         clearNotes();
         this.number = number;
@@ -169,6 +174,10 @@ public class Square {
         }
     }
 
+    /**
+     * Check if this square's number is the same as one of the others it is associated with
+     * @return true if is duplicate
+     */
     public boolean hasDuplicateValue() {
         for (Square square : getAssociatedSquares()) {
             if (square.getNumber() == number) return true;
@@ -176,6 +185,10 @@ public class Square {
         return false;
     }
 
+    /**
+     * Gets the associated squares of this square
+     * @return A set of the associated squares (no duplicates)
+     */
     public Set<Square> getAssociatedSquares() {
         Set<Square> associated = new HashSet<>();
         associated.add(this);
@@ -186,6 +199,9 @@ public class Square {
         return associated;
     }
 
+    /**
+     * Applies the correct color
+     */
     public void color() {
         if (locked)
             lblNumber.setForeground(Color.BLACK);
@@ -196,33 +212,46 @@ public class Square {
 
     }
 
-    private Color color;
-
-    public void setColor(Color color) {
-        this.color = color;
-    }
-
+    /**
+     * Check if the square has a color
+     * @return true if has color
+     */
     public boolean hasColor() {
         return color != null;
     }
 
+    /**
+     * Set the error status of this square
+     * @param error error if true
+     */
     public void setError(boolean error) {
         this.error = error;
         color();
     }
 
+    /**
+     * Sets this square to locked
+     * @param locked locked if true
+     */
     public void setLocked(boolean locked) {
         this.locked = locked;
         color();
     }
 
 
+    /**
+     * Sets a note to this square
+     * @param note
+     */
     public void setNote(int note) {
 
         // Only set notes if the Square is empty, else makes it invisible
         if (!hasNumber()) notes.get(note - 1).setVisible(!isVisible(note));
     }
 
+    /**
+     * Clears the notes of this square
+     */
     public void clearNotes() {
         // Set all notes that are currently active, making them go invisible again
         for (int i = 1; i < 10; i++) {
@@ -232,34 +261,67 @@ public class Square {
         }
     }
 
+    /**
+     * Checks if a certain note number is hidden
+     * @param note the note number
+     * @return
+     */
     public boolean isVisible(int note) {
         return notes.get(note - 1).isVisible();
     }
 
+    /**
+     * Get the number of this square
+     * @return the number
+     */
     public int getNumber() {
         return this.number;
     }
 
+    /**
+     * Check if this square has a number
+     * @return true if has number
+     */
     public boolean hasNumber() {
         return number != 0;
     }
 
+    /**
+     * Gets the unique id of this square
+     * @return the unique id
+     */
     public int getUniqueId() {
         return col + (row - 1) * 9 - 1;
     }
 
+    /**
+     * Gets the column of this square
+     * @return the column
+     */
     public Column getColumn() {
         return this.id.getColumn();
     }
 
+    /**
+     * Gets the row of this square
+     * @return the row
+     */
     public Row getRow() {
         return this.id.getRow();
     }
 
+    /**
+     * Gets the box of this square
+     * @return the box
+     */
     public Box getBox() {
         return grid.getBox(getColumn(), getRow());
     }
 
+    /**
+     * Gets all the fields associated with this square
+     * @return
+     */
     public List<Field> getFields() {
         List<Field> fields = new ArrayList<>();
 
@@ -271,6 +333,10 @@ public class Square {
     }
 
 
+    /**
+     * Paints this square
+     * @param g graphics
+     */
     public void paint(Graphics g) {
 
         /*
@@ -309,6 +375,7 @@ public class Square {
         }
     }
 
+    // Pretty straighforward
     public void setHighlighted(boolean highlighted) {
         this.highlighted = highlighted;
     }
@@ -349,14 +416,28 @@ public class Square {
         return this.locked;
     }
 
+
+    /**
+     * Checks if this square is hit
+     * @param p The point to check for reference
+     * @return true if hit
+     */
     public boolean isHit(Point p) {
         return p.x > (col - 1) * 50 && p.x < col * 50 && p.y > (row - 1) * 50 && p.y < row * 50;
     }
 
+    /**
+     * Checks if this square is empty
+     * @return
+     */
     public boolean isEmpty() {
         return this.getNumber() == 0;
     }
 
+    /**
+     * Returns a string representation of this square
+     * @return the string
+     */
     public String toString() {
         return "Column: " + getColumn().getId() + " | Row: " + getRow().getId() + " | ID: " + getUniqueId();
     }

@@ -7,6 +7,8 @@ import java.util.Map;
 
 public class Util {
 
+    // Could not really find a good situation for using sorting (without forcing it)
+    // so here is a method I was working on when trying to develop a better solving method which involved sorting a Map by its values (for which I used selection sort)
     public static LinkedHashMap<Integer, Integer> sortByValue(Map<Integer, Integer> map) {
 
         // Create lists for keys and values
@@ -35,38 +37,7 @@ public class Util {
 
     }
 
-    public static void sleep(int duration) {
-        try {
-            Thread.sleep(duration);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static <T> LinkedHashMap<T, List<Integer>> sortMapByValue(Map<T, List<Integer>> map) {
-        List<T> keys = new ArrayList<>(map.keySet());
-        List<List<Integer>> values = new ArrayList<>(map.values());
-        LinkedHashMap<T, List<Integer>> sortedMap = new LinkedHashMap<>();
-
-        // Sort the values
-        selectionSortList(values);
-
-        // Loop through each value and key and check if the passed map with the key has the value as its value
-        for (List<Integer> value : values) {
-            for (T key : keys) {
-                if (map.get(key).equals(value)) {
-                    // Prevents removal of duplicates
-                    keys.remove(key);
-
-                    // Put them into sorted map
-                    sortedMap.put(key, value);
-                    break;
-                }
-            }
-        }
-        return sortedMap;
-    }
-
+    // The sorting method
     public static void selectionSort(List<Integer> list) {
 
         for (int i = 0; i < list.size(); i++) {
@@ -83,15 +54,15 @@ public class Util {
 
     }
 
-    private static void selectionSortList(List<List<Integer>> list) {
-        for (int i = 0; i < list.size(); i++) {
-            int pos = i;
-            for (int j = i; j < list.size(); j++) {
-                if (list.get(j).size() < list.get(pos).size()) pos = j;
-            }
-            List<Integer> min = list.get(pos);
-            list.set(pos, list.get(i));
-            list.set(i, min);
+    /**
+     * Sleeps the current thread for a duration
+     * @param duration the duration
+     */
+    public static void sleep(int duration) {
+        try {
+            Thread.sleep(duration);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }

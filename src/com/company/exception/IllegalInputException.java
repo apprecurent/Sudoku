@@ -6,9 +6,7 @@
 package com.company.exception;
 
 /**
- *
+ * When the user does a wrong input
  * @author ville
  */
-public class IllegalInputException extends Exception {
-    
-}
+public class IllegalInputException extends Exception {}
